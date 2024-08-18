@@ -1,10 +1,17 @@
-"""リンクフォレストの予約ページを15分ごとにfetchして、予約可能日をLINEに通知する"""
+"""リンクフォレストの予約ページを15分ごとにfetchして、予約可能日をLINEに通知する
+Usage
+python main.py PS4
+python main.py PG2
+"""
+import sys
+
 from room import fetch_and_parse, parse_rooms, get_available_rooms, build_url
 from line import line_post, format_message
 
 
 def main():
-    url = build_url(plancd="PS4")
+    plancd = sys.argv[-1]
+    url = build_url(plancd=plancd)
     calendar_class = "c-calendar-sel"
     soup = fetch_and_parse(url, calendar_class)
     rooms = parse_rooms(soup)
