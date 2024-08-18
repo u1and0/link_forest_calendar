@@ -1,11 +1,10 @@
 """リンクフォレストの予約ページを15分ごとにfetchして、予約可能日をLINEに通知する"""
-from time import sleep
-from room import fetch_and_parse, parse_rooms, get_available_rooms
+from room import fetch_and_parse, parse_rooms, get_available_rooms, build_url
 from line import line_post, format_message
 
 
 def main():
-    url = "https://rsv.ihonex.com/cgi-bin/ihonex3/plan_cal.cgi?hid=linkforest&form=jp&roomcd=05&search_ninzu=0&search_adult=2&plancd=PS4"
+    url = build_url(plancd="PS4")
     calendar_class = "c-calendar-sel"
     soup = fetch_and_parse(url, calendar_class)
     rooms = parse_rooms(soup)

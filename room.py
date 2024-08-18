@@ -1,11 +1,33 @@
+"""リンクフォレストの部屋予約ページの取得関連モジュール"""
+import urllib.parse
 from datetime import datetime
 import subprocess
 from enum import Enum
 from bs4 import BeautifulSoup
 
 
+def build_url(**params):
+    """fetchするページのURLの作成"""
+    base_url = "https://rsv.ihonex.com/cgi-bin/ihonex3/plan_cal.cgi"
+    base_params = {
+        "hid": "linkforest",
+        "form": "jp",
+        "roomcd": "05",  # 部屋番号
+        " 部屋"
+        "search_ninzu": "0",
+        "search_adult": "2",
+        # "plancd": "PS4",  # プラン
+    }
+    params.update(base_params)
+    query_string = urllib.parse.urlencode(params)
+    return f"{base_url}?{query_string}"
+
+
 def fetch_and_parse(url, _class) -> BeautifulSoup:
-    """curl | grepでほしいクラスだけ取得してBeautifulSoupで構造化する"""
+    """curl | grepでほしいクラスだけ取得してBeautifulSoupで構造化する
+    リンクフォレストの予約ページが<p>タグの下層の<div>タグ内にあるため、
+    BeautifulSoupでパースできないため。
+    """
     # HTTP GETリクエスト
     curl_cmd = ["curl", "-fsSL", url]
     curl_result = subprocess.run(curl_cmd, capture_output=True, text=True)

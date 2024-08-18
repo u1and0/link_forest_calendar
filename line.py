@@ -1,3 +1,4 @@
+"""LINEへの投稿関連モジュール"""
 import os
 import requests
 import calendar
