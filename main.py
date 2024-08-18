@@ -3,14 +3,14 @@ Usage
 python main.py PS4
 python main.py PG2
 """
-import sys
+# import sys
+from time import sleep
 
 from room import fetch_and_parse, parse_rooms, get_available_rooms, build_url
 from line import line_post, format_message
 
 
-def main():
-    plancd = sys.argv[-1]
+def main(plancd: str):
     url = build_url(plancd=plancd)
     calendar_class = "c-calendar-sel"
     soup = fetch_and_parse(url, calendar_class)
@@ -31,4 +31,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # plancd = sys.argv[-1]
+    while True:
+        main("PG4")
+        main("PS2")
+        sleep(900)
