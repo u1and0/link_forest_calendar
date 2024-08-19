@@ -49,6 +49,7 @@ def main(plancd: str):
 
 if __name__ == '__main__':
     main("PS4")
+    main("PG2")
     # plancd = sys.argv[-1]
     # while True:
     # main("PS4")
