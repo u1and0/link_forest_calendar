@@ -5,9 +5,17 @@ python main.py PG2
 """
 # import sys
 from time import sleep
+from datetime import datetime
 
 from room import fetch_and_parse, parse_rooms, get_available_rooms, build_url
-from line import line_post, format_message
+from line import line_post, print_calendar
+
+
+def extract_year_month_tuple(
+        days_list: list[datetime]) -> set[tuple[int, int]]:
+    """days_listの(年,月)タプルの重複を削除して返す"""
+    return {(int(day.strftime("%Y")), int(day.strftime("%m")))
+            for day in days_list}
 
 
 def main(plancd: str):
@@ -24,15 +32,25 @@ def main(plancd: str):
         print(item)
 
     available_date = [room.date for room in availables]
+    # print(available_date)
 
-    message = format_message(url, available_date)
-    response = line_post(message)
-    print(response.status_code)
+    year_month_set = extract_year_month_tuple(available_date)
+    for year_month_tuple in year_month_set:
+        message = print_calendar(
+            year_month_tuple[0],
+            year_month_tuple[1],
+            available_date,
+        )
+        print(message)
+        # LINEへ送信
+        response = line_post(message)
+        print(response.status_code)
 
 
 if __name__ == '__main__':
+    main("PS4")
     # plancd = sys.argv[-1]
-    while True:
-        main("PG4")
-        main("PS2")
-        sleep(900)
+    # while True:
+    # main("PS4")
+    # main("PG2")
+    #     sleep(900)

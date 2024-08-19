@@ -1,7 +1,8 @@
 """LINEへの投稿関連モジュール"""
 import os
-import requests
 import calendar
+from datetime import datetime
+import requests
 
 JAPANESE_WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"]
 LINE_NOTIFY_URL = "https://notify-api.line.me/api/notify"
@@ -24,7 +25,7 @@ def line_post(message: str):
     return response
 
 
-def format_message(url: str, dates) -> str:
+def format_message(url: str, dates: list[datetime]) -> str:
     """lineのPOSTするメッセージをフォーマットする"""
     msg = f"""LinkForest の予約ページ から予約可能日一覧を表示します。
 {url}
@@ -36,21 +37,49 @@ def format_message(url: str, dates) -> str:
     return msg
 
 
-def print_calendar(year: int, month: int) -> str:
-    header = " " + " ".join(JAPANESE_WEEKDAYS)
-    calendar_str = [f"{year}年{month}月", header]
+def circle_day(year: int, month: int, day: int, days: list[datetime]):
+    if datetime(year, month, day) in days:
+        return f"({day:2})"
+    return f" {day:2} "
 
+
+def print_calendar(year: int, month: int, days: list[datetime]) -> str:
+    """テキストカレンダー表記の文字列を返す"""
+    header = " ".join(f"{w.rjust(2)}" for w in JAPANESE_WEEKDAYS)
+    calendar_str = [f"{year}年{month}月", header]
+    # daysに指定した日付をカッコ付きで表示
+    non_date_str = "  - "
     for week in calendar.monthcalendar(year, month):
-        row = [f"{day:3}" if day != 0 else "-".rjust(3) for day in week]
-        calendar_str.append("".join(row))
+        circle_week = [
+            circle_day(year, month, day, days) if day != 0 else non_date_str
+            for day in week
+        ]
+        # 1行を文字列に結合
+        calendar_str.append("".join(circle_week))
+    # 全行を改行で結合
     return "\n".join(calendar_str)
 
 
 if __name__ == "__main__":
-    cal0 = print_calendar(2024, 8)
-    cal1 = print_calendar(2024, 9)
-    cal2 = print_calendar(2024, 10)
-    cal = "\n\n".join([cal0, cal1, cal2])
-    print(cal)
-    status = line_post(cal)
+    days = [
+        datetime(2024, 8, 1),
+        datetime(2024, 8, 10),
+        datetime(2024, 8, 21),
+    ]
+    cal0 = print_calendar(2024, 8, days)
+    # cal1 = print_calendar(2024, 9)
+    # cal2 = print_calendar(2024, 10)
+    # cal = "\n\n".join([cal0, cal1, cal2])
+    print(cal0)
+    status = line_post(cal0)
     print(status)
+
+# 2024年8月
+#  月  火  水  木  金  土  日
+#   -   -   - ( 1)  2   3   4
+#   5   6   7   8   9 (10) 11
+#  12  13  14  15  16  17  18
+#  19  20 (21) 22  23  24  25
+#  26  27  28  29  30  31   -
+# 通知を送信しました！
+# <Response [200]>
