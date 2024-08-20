@@ -25,19 +25,30 @@ def line_post(message: str):
     return response
 
 
+def extract_year_month_tuple(
+        days_list: list[datetime]) -> set[tuple[int, int]]:
+    """days_listの(年,月)タプルの重複を削除して返す"""
+    return {(int(day.strftime("%Y")), int(day.strftime("%m")))
+            for day in days_list}
+
+
 def format_message(url: str, dates: list[datetime]) -> str:
     """lineのPOSTするメッセージをフォーマットする"""
     msg = f"""LinkForest の予約ページ から予約可能日一覧を表示します。
 {url}
     """
-    for date in dates:
-        index = date.weekday()
-        w = JAPANESE_WEEKDAYS[index]
-        msg += "\n{}".format(date.strftime(f'%Y年%m月%d日({w})'))
+    year_month_set = extract_year_month_tuple(dates)
+    for year_month_tuple in year_month_set:
+        msg += "\n" + print_calendar(
+            year_month_tuple[0],
+            year_month_tuple[1],
+            dates,
+        )
     return msg
 
 
 def circle_day(year: int, month: int, day: int, days: list[datetime]):
+    """days の中にdayが含まれていたら日付を(  )で囲む"""
     if datetime(year, month, day) in days:
         return f"({day:2})"
     return f" {day:2} "
