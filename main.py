@@ -37,7 +37,7 @@ def main(plancd: str):
 
     # 前回のカレンダーと異なっていたら
     # old_message.txtを書き換える
-    with open(path, "w+") as f:
+    with open(path, "r+") as f:
         old_message = f.read()
         # LINEに送信する
         if old_message != message:
@@ -45,6 +45,8 @@ def main(plancd: str):
             # LINEへ送信
             response = line_post(message)
             print(response.status_code)
+        else:
+            print("メッセージは送信されませんでした")
 
 
 if __name__ == '__main__':
