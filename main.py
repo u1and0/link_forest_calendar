@@ -3,6 +3,7 @@ Usage
 python main.py PS4
 python main.py PG2
 """
+import os
 from room import fetch_and_parse, parse_rooms, get_available_rooms, build_url
 from line import line_post, format_message
 
@@ -26,16 +27,26 @@ def main(plancd: str):
     message = format_message(url, available_date)
     print(message)
 
-    # LINEへ送信
-    response = line_post(message)
-    print(response.status_code)
+    # 過去のメッセージと比較
+    path = f"old_message_{plancd}.txt"
+    # ファイルパスがなければ作成する
+    if not os.path.isfile(path):
+        with open(path, "a"):
+            pass
+        os.chmod(path, 0o666)
+
+    # 前回のカレンダーと異なっていたら
+    # old_message.txtを書き換える
+    with open(path, "w+") as f:
+        old_message = f.read()
+        # LINEに送信する
+        if old_message != message:
+            f.write(message)
+            # LINEへ送信
+            response = line_post(message)
+            print(response.status_code)
 
 
 if __name__ == '__main__':
     main("PS4")
     main("PG2")
-    # plancd = sys.argv[-1]
-    # while True:
-    # main("PS4")
-    # main("PG2")
-    #     sleep(900)
