@@ -8,44 +8,66 @@ from room import fetch_and_parse, parse_rooms, get_available_rooms, build_url
 from line import line_post, format_message
 
 
-def main(plancd: str):
-    url = build_url(plancd=plancd)
+def is_message_updated(plancd: str, calendar: str) -> bool:
+    """
+    前回のメッセージと比較し、更新があればTrueを返す
+
+    Args:
+        plancd (str): プランコード
+        calendar (str): 整形後のメッセージ
+
+    Returns:
+        bool: カレンダーが更新されたていたらTrue
+    """
+    path = f"old_message_{plancd}.txt"
+
+    if not os.path.isfile(path):
+        with open(path, "w") as f:
+            f.write("")
+        return True
+
+    with open(path, "r") as f:
+        old_calendar = f.read()
+
+    if old_calendar != calendar:
+        # 新しいカレンダーになると
+        # ファイルに書き込んでTrueを返す
+        with open(path, "w") as f:
+            f.write(calendar)
+        return True
+    else:
+        return False
+
+
+def get_available_dates(url: str) -> list:
+    """
+    空室状況ページから空室日のリストを取得する
+
+    Args:
+        url (str): 空室状況ページのURL
+
+    Returns:
+        list: 空室日のリスト
+    """
     calendar_class = "c-calendar-sel"
     soup = fetch_and_parse(url, calendar_class)
     rooms = parse_rooms(soup)
-    # 結果を表示
-    # for entry in rooms:
-    #     print(entry)
-
     availables = get_available_rooms(rooms)
-    # for item in availables:
-    #     print(item)
+    return [room.date for room in availables]
 
-    available_date = [room.date for room in availables]
-    # print(available_date)
 
+def main(plancd: str):
+    """
+    指定されたプランコードの空室状況を取得し、
+    前回取得時と比較して変更があればLINEに通知する
+    plancd (str): プランコード
+    """
+    url = build_url(plancd=plancd)
+    available_date = get_available_dates(url)
     calendar = format_message(url, available_date)
     print(calendar)
 
-    # 過去のメッセージと比較
-    path = f"old_message_{plancd}.txt"
-    # ファイルパスがなければ作成する
-    if not os.path.isfile(path):
-        with open(path, "a"):
-            pass
-        os.chmod(path, 0o666)
-
-    # 前回のカレンダーと異なっていたら
-    # old_message.txtを書き換える
-    with open(path, "r") as old_file:
-        old_calendar = old_file.read()
-
-    # 過去のメッセージと異なっていたら
-    # LINEに送信する
-    if old_calendar != calendar:
-        with open(path, "w") as new_file:
-            new_file.write(calendar)
-        # LINEへ送信
+    if is_message_updated(plancd, calendar):
         response = line_post(calendar)
         print(response.status_code)
     else:
