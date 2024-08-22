@@ -24,8 +24,8 @@ def main(plancd: str):
     available_date = [room.date for room in availables]
     # print(available_date)
 
-    message = format_message(url, available_date)
-    print(message)
+    calendar = format_message(url, available_date)
+    print(calendar)
 
     # 過去のメッセージと比較
     path = f"old_message_{plancd}.txt"
@@ -37,16 +37,19 @@ def main(plancd: str):
 
     # 前回のカレンダーと異なっていたら
     # old_message.txtを書き換える
-    with open(path, "r+") as f:
-        old_message = f.read()
-        # LINEに送信する
-        if old_message != message:
-            f.write(message)
-            # LINEへ送信
-            response = line_post(message)
-            print(response.status_code)
-        else:
-            print("メッセージは送信されませんでした")
+    with open(path, "r") as old_file:
+        old_calendar = old_file.read()
+
+    # 過去のメッセージと異なっていたら
+    # LINEに送信する
+    if old_calendar != calendar:
+        with open(path, "w") as new_file:
+            new_file.write(calendar)
+        # LINEへ送信
+        response = line_post(calendar)
+        print(response.status_code)
+    else:
+        print("メッセージは送信されませんでした")
 
 
 if __name__ == '__main__':
