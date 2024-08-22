@@ -22,21 +22,20 @@ def is_message_updated(plancd: str, calendar: str) -> bool:
     path = f"old_message_{plancd}.txt"
 
     if not os.path.isfile(path):
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write("")
         return True
 
-    with open(path, "r") as f:
+    with open(path, "r", encoding="utf-8") as f:
         old_calendar = f.read()
 
     if old_calendar != calendar:
         # 新しいカレンダーになると
         # ファイルに書き込んでTrueを返す
-        with open(path, "w") as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write(calendar)
         return True
-    else:
-        return False
+    return False
 
 
 def get_available_dates(url: str) -> list:
@@ -67,13 +66,16 @@ def main(plancd: str):
     calendar = format_message(url, available_date)
     print(calendar)
 
-    if is_message_updated(plancd, calendar):
-        response = line_post(calendar)
-        print(response.status_code)
-    else:
-        print("メッセージは送信されませんでした")
+    if not is_message_updated(plancd, calendar):
+        return "メッセージは送信されませんでした"
+    response = line_post(calendar)
+    if response.status_code != 200:
+        return "メッセージの送信に失敗しました"
+    return "メッセージは送信されました"
 
 
 if __name__ == '__main__':
-    main("PS4")
-    main("PG2")
+    msg = main("PS4")
+    print(msg)
+    msg = main("PG2")
+    print(msg)
