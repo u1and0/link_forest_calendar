@@ -5,7 +5,7 @@ python main.py PG2
 """
 import os
 from room import fetch_and_parse, parse_rooms, get_available_rooms, build_url
-from line import line_post, format_message
+import line
 
 
 def is_message_updated(plancd: str, calendar: str) -> bool:
@@ -63,12 +63,12 @@ def main(plancd: str):
     """
     url = build_url(plancd=plancd)
     available_date = get_available_dates(url)
-    calendar = format_message(url, available_date)
+    calendar = line.format_message(url, available_date)
     print(calendar)
 
     if not is_message_updated(plancd, calendar):
         return "メッセージは送信されませんでした"
-    response = line_post(calendar)
+    response = line.post(calendar)
     if response.status_code != 200:
         return "メッセージの送信に失敗しました"
     return "メッセージは送信されました"
